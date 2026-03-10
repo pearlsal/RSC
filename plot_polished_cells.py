@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 """
-Plot-only driver (paper-pretty polar style) - MODIFIED VERSION
+Plot-only driver 
 ===============================================================
 
-MODIFICATIONS FROM ORIGINAL:
-1. Consistent font settings (Helvetica, 8pt base) to match journal figures
-2. Added --neuron-list argument to plot specific cells without CSV
-3. All hardcoded font sizes updated for consistency
-4. Made --classification-csv optional when using --neuron-list
+
 
 USAGE EXAMPLES:
     # Plot specific neurons (1-based indices):
@@ -71,7 +67,7 @@ try:
 except Exception:
     gaussian_filter = None
 
-import FINAL_COMPLETE_SCRIPT_matlab_rank_threshold as base
+import COMPLETE_Classification as base
 
 
 # -----------------------------
