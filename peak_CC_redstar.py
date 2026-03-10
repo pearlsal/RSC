@@ -11,7 +11,7 @@ from pathlib import Path
 from scipy import stats
 import argparse
 
-import FINAL_COMPLETE_SCRIPT_matlab_rank_threshold as base
+import COMPLETE_Classification as base
 
 
 def compute_cross_correlation_improved(rmA, rmB, occ_min=50, min_points=3, use_union_mask=True):
