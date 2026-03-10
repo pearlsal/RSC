@@ -26,7 +26,7 @@ Boundary-related tuning remains stable across contexts, whereas target-coding ce
 
 | Script | Description |
 |---|---|
-| `COMPLETE_classification.py` | **Core classification pipeline.** EBC/EBOC detection with shuffle-based significance testing, sequential classification following Alexander et al. (2020), stability filtering, and MATLAB-matched rate-map computation. Runs across all animals and serves as the imported backbone for several downstream scripts. |
+| `COMPLETE_Classification.py` | **Core classification pipeline.** EBC/EBOC detection with shuffle-based significance testing, sequential classification following Alexander et al. (2020), stability filtering, and MATLAB-matched rate-map computation. Runs across all animals and serves as the imported backbone for several downstream scripts. |
 | `organize_EBC_ETC_EOC.py` | Merges per-animal classification CSVs into a unified wide-format table with strict EBC/ETC/EOC flags and per-animal summary counts. |
 | `phantom_bait.py` | **Phantom-bait control.** Validates ETC specificity by placing an "egocentric cage" around the animal during open-field sessions (no prey) and testing whether structured tuning persists — it should not. Imports from the core pipeline. |
 | `plot_polished_cells.py` | Publication-quality polar ratemap figures for individual EBC/ETC/EOC cells. Supports CLI arguments for specific neuron lists or CSV-based batch plotting. Helvetica font hierarchy for journal figures. |
