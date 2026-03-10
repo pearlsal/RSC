@@ -32,7 +32,7 @@ Boundary-related tuning remains stable across contexts, whereas target-coding ce
 | `plot_polished_cells.py` | Publication-quality polar ratemap figures for individual EBC/ETC/EOC cells. Supports CLI arguments for specific neuron lists or CSV-based batch plotting. Helvetica font hierarchy for journal figures. |
 | `peak_CC_redstar.py` | Cross-correlation analysis of EBC tuning across session halves and conditions. Computes peak CC values with edge exclusion and star-marker placement. |
 | `temporal_cc_withStats.py` | Temporal cross-correlation stability for all EBC pairs. Generates multi-page PDFs, per-pair CSV metrics, Wilcoxon tests on peak-lag stability, and tolerance statistics. |
-| `etc_hd_OF.py` | ETC head-direction tuning comparison across Open Field → Chase → Open Field conditions, demonstrating that ETCs lose allocentric HD tuning during pursuit. |
+| `etc_hd_OF.py` | ETC head-direction tuning comparison across Open Field → Chase → Open Field conditions |
 | `chase_cell_analysis_merge_sessions.py` | Chase cell identification pipeline. Classifies neurons as chase-excited, chase-suppressed, or indifferent via permutation testing of firing rates inside vs. outside chase intervals, with FDR correction. |
 | `run_merged_chase_analysis.py` | Driver script for merged chase-session analysis. Configures per-animal session merging and rebinning from 8 ms to 50 ms bins. |
 | `speed_vs_chase.py` | Speed flip-flop control analysis. Confirms that chase modulation is not explained by running speed alone by comparing firing rates during chase vs. speed-matched open-field periods. |
