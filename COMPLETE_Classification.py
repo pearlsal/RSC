@@ -7,8 +7,8 @@ from __future__ import annotations
 PUBLICATION-READY EBC/EBOC ANALYSIS - ALL CRITICAL FIXES APPLIED
 ==============================================================================
 
-Version: 2.0 (Corrected)
-Date: November 22, 2024
+Version: 2.0 
+Date: November 22, 2025
 Author: Pearl S.
 
 CRITICAL FIXES IMPLEMENTED:
@@ -28,7 +28,7 @@ WHAT CHANGED:
 - Added validation to load_session_data
 
 EXPECTED RESULTS:
-- ~50% fewer "significant" cells (CORRECT - original was inflated)
+
 - Each neuron gets unique shuffles (original: all identical)
 - Short sessions properly handled or rejected
 - Statistically valid at α=0.05 family-wise error rate
@@ -54,19 +54,19 @@ USAGE:
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Complete EBC/EBOC Analysis — MATLAB-EXACT VERSION (FINAL FIX)
+Complete EBC/EBOC Analysis
 
 ALL CRITICAL FIXES APPLIED:
-1. ✅ rm_ns now DIMENSIONLESS (spikes/frame) - matches MATLAB exactly
-2. ✅ Uses SMOOTHED occ/nspk for NFR → MRL → PrefOrient (matches MATLAB)
+1. ✅ rm_ns now DIMENSIONLESS (spikes/frame) 
+2. ✅ Uses SMOOTHED occ/nspk for NFR → MRL → PrefOrient 
 3. ✅ PrefDist uses histogram along preferred orientation (EBC mode)
 4. ✅ CCrm_shift uses dimensionless ratemaps + occupancy filter (occ < 50)
 5. ✅ CCrm_shift IS NOW SAVED in .mat output files
-6. ✅ Shuffle range fixed: high = len(spk) + 1 (inclusive, matches MATLAB)
+6. ✅ Shuffle range fixed: high = len(spk) 
 7. ✅ Stability test shuffles spike trains (not ratemaps)
-8. ✅ MRL/MI percentiles set to 95% (matches MATLAB)
+8. ✅ MRL/MI percentiles set to 99% 
 
-Author: Fixed to match MATLAB exactly (all user requirements met)
+
 """
 
 import numpy as np
@@ -109,15 +109,15 @@ class LoaderConfig:
     chase_or_chill: str = "chase"  # or "chill"
     add_chill_to_of: bool = True
     use_shuffle_gates: bool = True
-    mrl_percentile: float = 95.0  # FIXED: Was 99.0, now 95.0 to match MATLAB
-    mi_percentile: float = 95.0
-    n_shuffles: int = 100
+    mrl_percentile: float = 99.0  
+    mi_percentile: float = 99.0
+    n_shuffles: int = 1000
     do_plot: bool = True
     save_results: bool = True
     output_dir: str = "."
     occ_min: int = OCCUPANCY_THRESHOLD
     which_neurons: str = "all"
-    n_shuffles_stability: int = 100
+    n_shuffles_stability: int = 1000
     fig_width: float = 40.0  # inches
     fig_height: float = 9.0  # inches
     font_scale: float = 1.6
@@ -245,7 +245,7 @@ def wrap_to_pi(a: np.ndarray) -> np.ndarray:
 
 
 # CRITICAL FIX #5: Standardized percentile calculation
-def compute_threshold(null_dist: np.ndarray, percentile: float = 95.0) -> float:
+def compute_threshold(null_dist: np.ndarray, percentile: float = 99.0) -> float:
     """
     Compute threshold using a MATLAB-rank-style method.
 
@@ -279,7 +279,7 @@ def compute_threshold(null_dist: np.ndarray, percentile: float = 95.0) -> float:
     if n == 0:
         return np.nan
 
-    # MATLAB-rank-style cutoff (maxk-like)
+   
     k = int(np.floor((100.0 - float(percentile)) / 100.0 * n)) + 1
     if k < 1:
         k = 1
@@ -2870,9 +2870,9 @@ if __name__ == "__main__":
 
         # Statistics:
         use_shuffle_gates=True,
-        mrl_percentile=99.0,  # CORRECTED: Now 99% (was 95%)
+        mrl_percentile=99.0,  
         mi_percentile=99.0,
-        n_shuffles=100,
+        n_shuffles=1000,
         #
         #         # Neurons to analyze:
         which_neurons="all",  # or "0-9" for testing
