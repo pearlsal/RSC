@@ -3,35 +3,11 @@
 from __future__ import annotations
 
 """
-==============================================================================
-PUBLICATION-READY EBC/EBOC ANALYSIS - ALL CRITICAL FIXES APPLIED
-==============================================================================
 
 Version: 2.0 
 Date: November 22, 2025
 Author: Pearl S.
 
-CRITICAL FIXES IMPLEMENTED:
-✅ 1. Shuffle range logic for short sessions (Issue #1)
-✅ 2. Sequential testing following Alexander et al. 2020 (Issue #2)
-✅ 3. RNG seeding consistency - uses GLOBAL_RNG (Issue #3)
-✅ 4. Standardized percentile calculation (linear interpolation)
-✅ 5. Data validation added
-✅ 6. Speed filtering at 5 cm/s (documented, already present)
-
-WHAT CHANGED:
-- Line 42: GLOBAL_RNG now uses np.random.default_rng(42)
-- Added 3 validation functions: compute_threshold, validate_shuffle_parameters, validate_session_data
-- Lines ~900, ~970, ~1230, ~1320: Fixed shuffle range logic (no more shift=1)
-- Line ~1600: classify_neuron now uses sequential testing (tuning first, then stability)
-- Removed 3 old threshold functions (_matlab_maxk_threshold_*)
-- Added validation to load_session_data
-
-EXPECTED RESULTS:
-
-- Each neuron gets unique shuffles (original: all identical)
-- Short sessions properly handled or rejected
-- Statistically valid at α=0.05 family-wise error rate
 
 REFERENCE:
 Alexander et al. (2020). "Egocentric boundary vector tuning of the 
@@ -54,17 +30,6 @@ USAGE:
 # !/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Complete EBC/EBOC Analysis
-
-ALL CRITICAL FIXES APPLIED:
-1. ✅ rm_ns now DIMENSIONLESS (spikes/frame) 
-2. ✅ Uses SMOOTHED occ/nspk for NFR → MRL → PrefOrient 
-3. ✅ PrefDist uses histogram along preferred orientation (EBC mode)
-4. ✅ CCrm_shift uses dimensionless ratemaps + occupancy filter (occ < 50)
-5. ✅ CCrm_shift IS NOW SAVED in .mat output files
-6. ✅ Shuffle range fixed: high = len(spk) 
-7. ✅ Stability test shuffles spike trains (not ratemaps)
-8. ✅ MRL/MI percentiles set to 99% 
 
 
 """
@@ -83,12 +48,11 @@ import warnings
 import pandas as pd
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
-# Replaced scipy.ndimage.convolve with scipy.signal.convolve2d to better match MATLAB conv2(...,'same')
+
 from scipy.signal import convolve2d
 
-# Use NumPy's MT19937 generator (closer conceptually to MATLAB's Mersenne Twister)
 warnings.filterwarnings('ignore')
-# CRITICAL FIX #3: Use modern RNG, initialized ONCE
+
 GLOBAL_RNG = np.random.default_rng(42)
 
 # --------------------------- GLOBALS ---------------------------
@@ -122,7 +86,7 @@ class LoaderConfig:
     fig_height: float = 9.0  # inches
     font_scale: float = 1.6
     out_dpi: int = 400
-    # Optional: directory where MATLAB-produced shift arrays can be stored and re-used
+
     matlab_shifts_dir: Optional[str] = None
 
     def __post_init__(self):
@@ -188,11 +152,7 @@ from scipy.stats import norm as scipy_norm
 
 def smooth_mat(mat, kernel_size, std):
     """
-    Match MATLAB SmoothMat behavior:
-    - kernel_size: [bins_x, bins_y] interpreted like MATLAB.
-    - MATLAB builds Xgrid,Ygrid with meshgrid(-k/2 : 1 : k/2), i.e., step 1.
-      For kernel_size=3 this becomes [-1.5, -0.5, 0.5, 1.5] (4 points).
-    - Kernel = pdf('Normal', Rgrid, 0, std) normalized, then conv2(mat,kernel,'same').
+
     """
     if std == 0:
         return mat
@@ -212,7 +172,7 @@ def smooth_mat(mat, kernel_size, std):
 
 def smooth_mat_wrapped(mat, kernel_size, std):
     """
-    MATLAB-like Gaussian smoothing with circular boundary conditions.
+    Gaussian smoothing with circular boundary conditions.
 
     Matches:
         h = fspecial('gaussian', kernel_size, std);
@@ -244,14 +204,8 @@ def wrap_to_pi(a: np.ndarray) -> np.ndarray:
     return (a + np.pi) % (2 * np.pi) - np.pi
 
 
-# CRITICAL FIX #5: Standardized percentile calculation
 def compute_threshold(null_dist: np.ndarray, percentile: float = 99.0) -> float:
     """
-    Compute threshold using a MATLAB-rank-style method.
-
-    This emulates the common MATLAB pattern used in your pipeline where thresholds
-    are derived from the top-k values of the shuffle distribution (e.g., maxk),
-    rather than interpolation-based percentiles.
 
     For a distribution of length N, we select the k-th largest value where:
         k = floor((100 - percentile) / 100 * N) + 1
@@ -334,7 +288,6 @@ def validate_shuffle_parameters(spk_len: int, block_size: int = BLOCK_SIZE_BINS,
     return True, min_shift, warning
 
 
-# CRITICAL FIX #6: Data validation
 def validate_session_data(data: dict, session_name: str) -> bool:
     """
     Validate loaded session data.
@@ -424,7 +377,6 @@ def load_session_data(folder_loc, animal, session, channels, binsize):
 
     data = sio.loadmat(str(fpath))
 
-    # CRITICAL FIX #6: Validate data
     validate_session_data(data, session)
 
     return data
@@ -700,7 +652,7 @@ def _bin_counts(distances_for_binning, theta_bins_deg, dist_edges_cm, spk_vec):
     """
     Bin distances into [theta, dist] occupancy and spike-count maps.
 
-    MATLAB-exact semantics (as far as we can infer from neuron1full.mat):
+
       - Each time bin contributes to exactly one distance bin (or none if NaN).
       - occ_ns(d,t): number of *frames* whose distance falls into that (dist,angle) bin.
       - nspk_ns(d,t): number of *frames with at least one spike* in that bin,
@@ -807,7 +759,7 @@ def compute_ebc_ratemap(
         debug_ebc: bool = False,
 ):
     """
-    EBC (wall) egocentric ratemap — MATLAB-STYLE VERSION
+    EBC (wall) egocentric ratemap
 
     Key points:
       - Angle bins: -180:10:170  (36 bins of 10°)
@@ -1004,9 +956,8 @@ def compute_ebc_ratemap(
                 MI = float(np.nansum(p_occ[mask] * ratio[mask] * np.log2(ratio[mask])))
 
     # -----------------------
-    # 7) Scalar firing rate (Hz) - CORRECTED
+    # 7) Scalar firing rate (Hz) 
     # -----------------------
-    # CRITICAL FIX: Use ORIGINAL spike train, not map counts
     # The 'spk' array is the 1D spike train BEFORE egocentric binning
     total_spikes = float(np.sum(spk))  # Count spikes in original train
     total_time = len(spk) * dt_sec  # Total recording time in seconds
@@ -1210,7 +1161,7 @@ def compute_mrl_distribution_ebc(x, y, hd, spk, box_edges, theta_bins_deg, dist_
     return MRL_d
 
 
-# --------------------------- EBOC (bait) ---------------------------
+# --------------------------- ETC (bait) ---------------------------
 def compute_eboc_ratemap(
         x,
         y,
@@ -1447,7 +1398,7 @@ def generate_shifted_stack_eboc(
 
     for s in range(n_shifts):
         # Shift range: [BLOCK_SIZE_BINS, len(spk)] inclusive (MATLAB-like)
-        # CRITICAL FIX #1: Proper shuffle range
+
         is_valid, min_shift, message = validate_shuffle_parameters(len(spk))
         if not is_valid:
             raise ValueError(f"Cannot shuffle: {message}")
@@ -1512,7 +1463,7 @@ def compute_mi_distribution_eboc(
         n_shuffles=100,
 ):
     """
-    Build null Skaggs MI distribution for EBOC via spike-train shuffles.
+    Build null Skaggs MI distribution for ETC via spike-train shuffles.
     • For each shuffle, circularly shift spike train by a random offset
       between BLOCK_SIZE_BINS (30 s) and len(spk), like MATLAB.
     • Re-bin relative to bait (angle + distance) using the SAME binning as
@@ -1687,8 +1638,6 @@ def compute_stability_null_distribution(x, y, hd, spk, box_edges=None,
                                         is_eboc=False, dt_sec=0.008333,
                                         occ_min=50, n_shuffles=100):
     """
-    MATLAB-EXACT stability null distribution.
-
     For each shuffle:
     1. Cyclically shift spike train
     2. Split into odd/even 30-second blocks
@@ -1849,12 +1798,12 @@ def classify_neuron(main_map, odd_map, even_map, cfg: LoaderConfig):
         out['classification'] = f'Non-{cls_label}'
         out['is_significant'] = False
         out['is_stable'] = False  # Not tested
-        print(f"  ❌ Not tuned → Stability NOT tested (sequential approach)")
+        print(f" Not tuned → Stability NOT tested (sequential approach)")
         print("  " + "=" * 66)
         return out
 
     # === STEP 2: Test STABILITY (only for tuned cells) ===
-    print(f"  ✓ Cell IS tuned! Now testing stability...")
+    print(f"  Cell IS tuned! Now testing stability...")
 
     # Compute observed odd-even correlation
     A = odd_map['rm_ns'].copy()
@@ -1938,9 +1887,9 @@ def classify_neuron(main_map, odd_map, even_map, cfg: LoaderConfig):
 
         # Diagnostic
         if len(cc_shuffled) == 0:
-            print(f"  ⚠️  Cannot test stability - no valid shuffles")
+            print(f"  Cannot test stability - no valid shuffles")
         if not np.isfinite(real_corr):
-            print(f"  ⚠️  Cannot test stability - insufficient data for correlation")
+            print(f"  Cannot test stability - insufficient data for correlation")
 
     # Final classification (FIXED - KEEP ONLY THIS ONE)
     stability_testable = out.get('stability_testable', True)
@@ -1979,9 +1928,9 @@ def classify_neuron(main_map, odd_map, even_map, cfg: LoaderConfig):
 
         # Warn if suspiciously high
         if fr_verify > 15.0:
-            print(f"  ⚠️  WARNING: High firing rate ({fr_verify:.2f} Hz)")
-            print(f"     Total spikes: {int(total_spikes)}")
-            print(f"     Recording: {total_time / 60:.1f} minutes")
+            print(f"  WARNING: High firing rate ({fr_verify:.2f} Hz)")
+            print(f"  Total spikes: {int(total_spikes)}")
+            print(f"  Recording: {total_time / 60:.1f} minutes")
 
     return out
 
@@ -1989,10 +1938,8 @@ def classify_neuron(main_map, odd_map, even_map, cfg: LoaderConfig):
 # --------------------------- SAVE .MAT ---------------------------
 def mat_out_struct(rm_map):
     """
-    Build MATLAB-style 'out' struct from our ratemap dict.
 
-    We now also keep the raw time series and distance matrix so we can
-    compare Python vs MATLAB frame-by-frame:
+    We now also keep the raw time series and distance matrix 
       - x, y, md, spike: concatenated time series
       - dis: distance matrix (time × angle) used for binning
     """
@@ -2063,7 +2010,7 @@ def _theta_edges_from_centers(centers_rad: np.ndarray) -> np.ndarray:
 
 
 def _polar_mesh_wrapped(ax, rm_data, title, occ_min, vmin=None, vmax=None, annotate_fr: Optional[float] = None):
-    """Seamless polar-like heatmap."""
+    """ polar-like heatmap."""
     rm = rm_data['rm'].copy()
     occ = rm_data['occ_ns'].copy()
     rm[occ < occ_min] = np.nan
@@ -2854,8 +2801,8 @@ def run_full_analysis(cfg: LoaderConfig):
 if __name__ == "__main__":
     cfg = LoaderConfig(
         # CHANGE THESE for your data:
-        folder_loc="/Users/pearls/Work/RSC_project/",  # ← CHANGE THIS
-        which_animal="ToothMuch",  # ← CHANGE THIS (e.g., "MimosaPudica","PreciousGrape","ToothMuch", "Arwen", "Luke")
+        folder_loc="/Users/pearls/Work/RSC_project/",  #  CHANGE THIS
+        which_animal="ToothMuch",  #  CHANGE THIS (e.g., "MimosaPudica","PreciousGrape","ToothMuch", "Arwen", "Luke")
         which_channels="RSC",
         binsize=0.00833,
 
@@ -2864,7 +2811,7 @@ if __name__ == "__main__":
         chase_sessions=["ob1", "ob2"],
 
         # Analysis:
-        ebc_or_eboc="EBOC",  # or "EBOC" for bait-oriented cells
+        ebc_or_eboc="EBOC",  # or "ETC" for bait-oriented cells
         chase_or_chill="chase",
         add_chill_to_of=False,
 
@@ -2909,10 +2856,10 @@ if __name__ == "__main__":
                 print(f"Trying: {sess_path}")
 
             if not sess_path.exists():
-                print(f"  ❌ File not found")
+                print(f"  File not found")
                 continue
 
-            print(f"  ✓ Found file")
+            print(f"  Found file")
 
             # Load data
             data = sio.loadmat(str(sess_path), squeeze_me=True, struct_as_record=False)
@@ -2945,7 +2892,7 @@ if __name__ == "__main__":
                         break
 
             if spd is None:
-                print(f"  ❌ Cannot find binned_speed in file")
+                print(f"  Cannot find binned_speed in file")
                 print(f"  Available keys: {[k for k in data.keys() if not k.startswith('__')]}")
                 continue
 
@@ -3002,7 +2949,7 @@ if __name__ == "__main__":
                     elif ratio < 2.5:
                         print(f"    ~ HD moderately noisier when stationary - can lower cautiously")
                     else:
-                        print(f"    ⚠️  HD is noisy when stationary - keep current threshold or improve tracking")
+                        print(f"     HD is noisy when stationary - keep current threshold or improve tracking")
 
         except Exception as e:
             import traceback
