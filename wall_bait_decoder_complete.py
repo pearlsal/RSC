@@ -13,9 +13,8 @@ What this script does
    Row 2: Time series (True + Decoded)
    Row 3: Null distributions (directly below corresponding panel)
 
-How to run (recommended)
+How to run 
 ------------------------
-Option A (recommended): provide a decoder module that exposes:
   - decode_wall(spike_times_train: dict, behavior_test: dict) -> (dec_dist, dec_bear)
   - decode_bait(spike_times_train: dict, behavior_test: dict) -> (dec_dist, dec_bear)
 
@@ -39,7 +38,7 @@ Option B (demo): run with synthetic data (just to verify the figure/layout)
 
 Notes
 -----
-- This script DOES NOT implement your Bayesian decoder. It calls YOUR functions.
+- This script DOES NOT implement Bayesian decoder. It calls functions.
 - Nulls are done by circularly shifting spike times for each neuron independently.
 """
 
