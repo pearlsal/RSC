@@ -102,11 +102,11 @@ def load_ebc_data(folder_loc, animal, channels, neuron_idx, binsize, occ_min,
             hd_of_all.append(hd)
             spk_of_all.append(spk)
         except Exception as e:
-            print(f"        ✗ {sess} failed: {e}")
+            print(f"        {sess} failed: {e}")
             continue
 
     if not x_of_all:
-        print(f"        ✗ No OF data loaded")
+        print(f"         No OF data loaded")
         return None
 
     x_of = np.concatenate(x_of_all)
@@ -416,7 +416,7 @@ Examples:
 
     # Print summary statistics
     if len(df_results) == 0:
-        print("\n⚠️  No neurons successfully analyzed. Check error messages above.")
+        print("\n  No neurons successfully analyzed. Check error messages above.")
         return
 
     print("\n" + "=" * 60)
