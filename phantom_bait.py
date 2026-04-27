@@ -714,4 +714,4 @@ if __name__ == "__main__":
             method="resample",
         )
 
-    print("\n✓ Phantom bait control complete for all animals!")
+    print("\n Phantom bait control complete for all animals!")
