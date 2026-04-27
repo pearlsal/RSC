@@ -541,7 +541,7 @@ def load_ebc_for_plot(cfg: PlotCfg, neuron_idx: int):
         try:
             d = base.load_session_data(cfg.folder_loc, cfg.which_animal, sess, cfg.which_channels, cfg.binsize)
         except FileNotFoundError:
-            print(f"  ⚠️ missing OF {sess} for {cfg.which_animal}, skipping")
+            print(f"   missing OF {sess} for {cfg.which_animal}, skipping")
             continue
         loaded_of = True
         x, y, hd, spk, _, _, _ = base.prepare_data(d, neuron_idx, None, True)
@@ -563,7 +563,7 @@ def load_ebc_for_plot(cfg: PlotCfg, neuron_idx: int):
         try:
             d = base.load_session_data(cfg.folder_loc, cfg.which_animal, sess, cfg.which_channels, cfg.binsize)
         except FileNotFoundError:
-            print(f"  ⚠️ missing chase {sess} for {cfg.which_animal}, skipping")
+            print(f"  missing chase {sess} for {cfg.which_animal}, skipping")
             continue
         sel = base.extract_chase_intervals(d, sess, cfg.which_animal, cfg.chase_or_chill)
         if sel is None:
@@ -608,7 +608,7 @@ def load_eboc_for_plot(cfg: PlotCfg, neuron_idx: int):
         try:
             d = base.load_session_data(cfg.folder_loc, cfg.which_animal, sess, cfg.which_channels, cfg.binsize)
         except FileNotFoundError:
-            print(f"  ⚠️ missing chase {sess} for {cfg.which_animal}, skipping")
+            print(f"  missing chase {sess} for {cfg.which_animal}, skipping")
             continue
 
         sel = base.extract_chase_intervals(d, sess, cfg.which_animal, cfg.chase_or_chill)
@@ -757,7 +757,7 @@ def main():
                     if idx >= 0:
                         neuron_idxs.append(idx)
                 except ValueError:
-                    print(f"  ⚠️ Invalid neuron index: '{x}', skipping")
+                    print(f"   Invalid neuron index: '{x}', skipping")
 
         if not neuron_idxs:
             raise ValueError("No valid neuron indices in --neuron-list")
@@ -796,11 +796,11 @@ def main():
                 fig.savefig(out_pdf, bbox_inches="tight", pad_inches=0.02)
 
             plt.close(fig)
-            print(f"  ✓ saved {out_png.name}" + (" (+pdf)" if args.save_pdf else ""))
+            print(f"   saved {out_png.name}" + (" (+pdf)" if args.save_pdf else ""))
             success_count += 1
 
         except Exception as e:
-            print(f"  ✗ neuron {n + 1}: {e}")
+            print(f"   neuron {n + 1}: {e}")
 
     print(f"[done] Successfully plotted {success_count}/{len(neuron_idxs)} neurons")
 
